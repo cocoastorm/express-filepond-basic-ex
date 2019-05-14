@@ -10,6 +10,11 @@ const port = process.env.PORT || 3000;
 // oh hello
 // app.get('/', (req, res) => res.send('Filepond Example with Express'));
 app.get('/', (req, res) => res.sendFile(path.resolve(__dirname, './index.html')));
+app.use(
+  express.static(
+    path.resolve(__dirname, './assets'),
+  ),
+);
 
 // file upload processing
 app.post('/file/process', processFile);

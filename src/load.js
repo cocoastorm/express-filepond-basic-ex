@@ -13,13 +13,22 @@ const loadFile = (req, res) => {
       return res.status(500).send(err.message);
     }
 
-    // set file headers
-    res.set('Access-Control-Expose-Headers', 'Content-Disposition, Content-Length');
-    res.attachment(files[0]);
+    const filename = files[0];
+    const filepath = path.join(filePathId, filename);
 
-    return res.sendFile(files[0], {
-      root: filePathId,
-      cacheControl: false,
+    // ?
+    res.set('Access-Control-Expose-Headers', 'Content-Disposition, Content-Length, Content-Type');
+    res.set('Content-Disposition', `inline; filename="${filename}"`);
+
+    return res.sendFile(filepath, { cacheControl: false }, (err) => {
+      if (err) {
+        if (res.headersSent) {
+          console.log(err);
+          return;
+        }
+
+        res.status(500).send(err.message);
+      }
     });
   });
 };

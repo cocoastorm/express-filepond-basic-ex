@@ -22,6 +22,7 @@
       id="file"
       type="file"
       name="file"
+      multiple="multiple"
       class="filepond"
     />
     
@@ -47,6 +48,8 @@
           .join('\r\n');
       }
 
+      const $http = axios.create();
+
       FilePond.setOptions({
         server: {
           process: './file/process',
@@ -55,7 +58,13 @@
           load: (source, load, error, progress, abort, headers) => {
             const cancel = axios.CancelToken.source();
 
-            const r = axios.get('file/' + source + '/load', {
+            const r = $http.get('file/' + source + '/load', {
+              responseType: 'blob',
+
+              onDownloadProgress: (e) => {
+                progress(e.lengthComputable, e.loaded, e.total);
+              },
+
               cancelToken: cancel.token,
             });
 
@@ -63,10 +72,10 @@
               headers(
                 headersToString(response.headers),
               );
+            });
 
-              progress(true, 0, 1024);
-
-              load(new Blob([response.data]));
+            r.then((response) => {
+              load(response.data);
             });
 
             r.catch((e) => {
@@ -93,7 +102,7 @@
         {
           files: [
             {
-              source: '160283f8-6d25-4445-a023-66fad7b18525',
+              source: '354d6316-f5e5-4772-941a-a1a7e543fbeb',
               options: { type: 'local' },
             },
           ],
