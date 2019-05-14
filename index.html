@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Filepond from CDN</title>
+    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
+
+    <style>
+      html {
+        padding:30vh 0 0;
+      }
+
+      body {
+        max-width: 20em;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- The classic file input element we'll enhance to a file pond -->
+    <input
+      id="file"
+      type="file"
+      name="file"
+      class="filepond"
+    />
+    
+    <!-- Load Axios -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!-- Load FilePond library -->
+    <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+
+    <!-- Turn all file input elements into ponds -->
+    <script>
+      function headersToString(headers) {
+        return Object.keys(headers)
+          .map((h) => {
+            let str = '';
+            str += h;
+            str += ':';
+            str += ' ';
+            str += headers[h];
+
+            return str;
+          })
+          .join('\r\n');
+      }
+
+      FilePond.setOptions({
+        server: {
+          process: './file/process',
+          revert: null,
+          restore: null,
+          load: (source, load, error, progress, abort, headers) => {
+            const cancel = axios.CancelToken.source();
+
+            const r = axios.get('file/' + source + '/load', {
+              cancelToken: cancel.token,
+            });
+
+            r.then((response) => {
+              headers(
+                headersToString(response.headers),
+              );
+
+              progress(true, 0, 1024);
+
+              load(new Blob([response.data]));
+            });
+
+            r.catch((e) => {
+              console.warn(e);
+
+              if (!axios.isCancel(e)) {
+                error(e.message);
+              }
+            });
+
+            return {
+              abort: () => {
+                cancel.cancel();
+                abort();
+              },
+            };
+          },
+          fetch: null,
+        }
+      })
+
+      const pond = FilePond.create(
+        document.querySelector('#file'),
+        {
+          files: [
+            {
+              source: '160283f8-6d25-4445-a023-66fad7b18525',
+              options: { type: 'local' },
+            },
+          ],
+        }
+      );
+    </script>
+  </body>
+</html>
