@@ -4,6 +4,7 @@
   "description": "example implementation for filepond",
   "main": "index.js",
   "scripts": {
+    "serve": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Khoa Nguyen <khoa.tan.nguyen.96@gmail.com>",
